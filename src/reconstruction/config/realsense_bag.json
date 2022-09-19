@@ -1,6 +1,6 @@
 {
     "name": "Captured frames using Realsense",
-    "path_dataset": "dataset/realsense_bag/r6_g4l_15fps_31_8.bag",
+    "path_dataset": "../../data/bag_files/R6_G4_L_14_9.bag",
     "max_depth": 1.1,
     "voxel_size":0.01,
     "max_depth_diff": 0.07,

@@ -6,6 +6,8 @@ data/image_files/*
 main.py
 
 #ide files
+.idea/workspace.xml
+.idea/.gitignore
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
