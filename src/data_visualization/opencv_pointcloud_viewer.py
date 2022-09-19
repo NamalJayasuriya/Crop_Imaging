@@ -37,7 +37,7 @@ FILTERING = True
 #live
 fps = 30
 
-file_path = '"../../data/bag_files/R6_G4_L_14_9.bag"'
+file_path = "../../data/bag_files/R6_G4_L_14_9.bag"
 
 class AppState:
 
