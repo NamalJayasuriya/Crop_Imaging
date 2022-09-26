@@ -37,21 +37,20 @@ from os.path import exists, join, abspath
 import shutil
 import json
 from enum import IntEnum
-import time
 from flirpy.camera.lepton import Lepton
 
 import sys
 sys.path.append(abspath(__file__))
-from realsense_helper import get_profiles
+from src.utils.realsense_helper import get_profiles
 
 
 
 CLIPPING_DISTANCE = 1.1
-FPS = 15 #record from device
+FPS = 6 #record from device
 RES_X =  1280 #record from device
 REX_Y = 720 #record from device
 BAG_FILE_NAME_READ = '../../data/bag_files/R6_G4_l_16_300_D415_441PM.bag' #R6_G4_l_16_300_D415_441PM  D415_single_plant2
-DIRECTORY_OUT_DEFAULT = '../../data/t' #'../dataset/R2_G4R_7_9/'
+DIRECTORY_OUT_DEFAULT = '../../data/image_files/t' #'../dataset/R2_G4R_7_9/'
 SAVE_IMGS_ON_PLAYBACK = False # only for  playback rosbag
 RECORDING = False
 DECIMATION = True
@@ -274,7 +273,7 @@ if __name__ == "__main__":
                     cv2.imwrite("%s/%06d.png" % \
                                 (path_thermal, fc2), thermal_img2)
                     cv2.imwrite("%s/%06d_.png" % \
-                                (path_thermal, fc2), cv2.resize(thermal_img, (1280, 720)))
+                                (path_thermal, fc2), thermal_img)
                     print("Saved color + depth + thermal images %06d" % fc2)
                     fc2 += 1
                 frame_count += 1
@@ -308,7 +307,7 @@ if __name__ == "__main__":
             elif key == ord('s'):
                 file = str(input("Enter A Directory Name: "))
                 #DIRECTORY_OUT_DEFAULT = '../dataset/'+file
-                path_output = '../dataset/'+file
+                path_output = '../../data/image_fies/'+file
                 path_depth = join(path_output, "depth")
                 path_color = join(path_output, "color")
                 path_thermal = join(path_output, "thermal")
