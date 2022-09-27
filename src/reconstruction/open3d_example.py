@@ -186,13 +186,18 @@ def sorted_alphanum(file_list_ordered):
 
 
 def get_file_list(path, n_imgs, extension=None):
-    tot_images = len(listdir(path))
-    if n_imgs == -1:
-        offset = 1
+    dir_type = path.split('/')[-2]
+    if dir_type=='color' or dir_type=='depth':
+        tot_images = len(listdir(path))
+        if n_imgs == -1:
+            offset = 1
+        else:
+            offset = tot_images//n_imgs
+        list_dir = [f for f in listdir(path)[::offset]] # Edited by Namal
     else:
-        offset = tot_images//n_imgs
+        list_dir = [f for f in listdir(path)] # Edited by Namal
 
-    list_dir = [f for f in listdir(path)[::offset]] # Edited by Namal
+
 
     print("Number of samples: {0}, offset: {1}".format( len(list_dir), offset))
     if extension is None:
