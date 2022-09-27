@@ -84,7 +84,7 @@ def initialize_config(config):
     set_default_value(config, "icp_method", "color")
     set_default_value(config, "global_registration", "ransac")
     set_default_value(config, "python_multi_threading", True)
-
+    set_default_value(config, "number_of_images", -1) # Added by Namal
     # `slac` and `slac_integrate` related parameters.
     # `voxel_size` and `min_depth` parameters from previous section,
     # are also used in `slac` and `slac_integrate`.
