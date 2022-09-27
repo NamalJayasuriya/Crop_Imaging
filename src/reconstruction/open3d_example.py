@@ -186,12 +186,14 @@ def sorted_alphanum(file_list_ordered):
 
 
 def get_file_list(path, extension=None):
+    list_dir = [f for f in listdir(path)[::2]] # Edited by Namal
+    print("Number of samples: " + str(len(list_dir)))
     if extension is None:
-        file_list = [path + f for f in listdir(path) if isfile(join(path, f))]
+        file_list = [path + f for f in list_dir if isfile(join(path, f))]
     else:
         file_list = [
             path + f
-            for f in listdir(path)
+            for f in list_dir
             if isfile(join(path, f)) and splitext(f)[1] == extension
         ]
     file_list = sorted_alphanum(file_list)
