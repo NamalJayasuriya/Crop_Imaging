@@ -212,8 +212,7 @@ def make_posegraph_for_scene(ply_file_names, config):
 def run(config):
     print("register fragments.")
     o3d.utility.set_verbosity_level(o3d.utility.VerbosityLevel.Debug)
-    ply_file_names = get_file_list(
-        join(config["path_dataset"], config["folder_fragment"]), ".ply")
+    ply_file_names = get_file_list(join(config["path_dataset"], config["folder_fragment"]), extension=".ply")
     make_clean_folder(join(config["path_dataset"], config["folder_scene"]))
     make_posegraph_for_scene(ply_file_names, config)
     optimize_posegraph_for_scene(config["path_dataset"], config)

@@ -226,7 +226,7 @@ def run(config):
     print("refine rough registration of fragments.")
     o3d.utility.set_verbosity_level(o3d.utility.VerbosityLevel.Debug)
     ply_file_names = get_file_list(
-        join(config["path_dataset"], config["folder_fragment"]), ".ply")
+        join(config["path_dataset"], config["folder_fragment"]), extension=".ply")
     make_posegraph_for_refined_scene(ply_file_names, config)
     optimize_posegraph_for_refined_scene(config["path_dataset"], config)
 
