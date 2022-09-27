@@ -185,8 +185,9 @@ def sorted_alphanum(file_list_ordered):
     return sorted(file_list_ordered, key=alphanum_key)
 
 
-def get_file_list(path, extension=None, n_imgs=-1):
+def get_file_list(path, extension=None, n_imgs=-1, start_f=100, end_f=-100):
     # ------- added by Namal------
+
     dir_type = path.split('/')[-2]
     if dir_type=='color' or dir_type=='depth':
         tot_images = len(listdir(path))
@@ -194,7 +195,7 @@ def get_file_list(path, extension=None, n_imgs=-1):
             offset = 1
         else:
             offset = tot_images//n_imgs
-        list_dir = [f for f in listdir(path)[::offset]]
+        list_dir = [f for f in listdir(path)[start_f:end_f:offset]]
     else:
         list_dir = [f for f in listdir(path)]
     #-----------------
@@ -237,7 +238,7 @@ def get_rgbd_folders(path_dataset):
     return path_color, path_depth
 
 
-def get_rgbd_file_lists(path_dataset, n_imgs):
+def get_rgbd_file_lists(path_dataset, n_imgs=-1):
     path_color, path_depth = get_rgbd_folders(path_dataset)
     color_files = get_file_list(path_color, ".jpg", n_imgs) + \
             get_file_list(path_color, ".png", n_imgs)

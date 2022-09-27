@@ -1,8 +1,8 @@
 {
     "name": "Captured frames using Realsense",
-    "path_dataset": "../../data/image_files/R6_G4_L_14_9/",
-    "path_intrinsic": "../../data/image_files/R6_G4_L_14_9/camera_intrinsic.json",
-    "max_depth": 1.1,
+    "path_dataset": "../../data/image_files/R6_G4_L_21_9/",
+    "path_intrinsic": "../../data/image_files/R6_G4_L_21_9/camera_intrinsic.json",
+    "max_depth": 1.8,
     "voxel_size":0.01,
     "max_depth_diff": 0.07,
     "preference_loop_closure_odometry": 0.1,
@@ -13,7 +13,11 @@
     "python_multi_threading": true,
     "device":"GPU:0",
     "n_frames_per_fragment": 100,
-    "sdf_trunc": 0.04
+    "sdf_trunc": 0.04,
+    "number_of_images": 200,
+    "start_image": 100,
+    "end_image": -100
+
 }
 
 
