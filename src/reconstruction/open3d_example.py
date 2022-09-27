@@ -199,7 +199,7 @@ def get_file_list(path, n_imgs, extension=None):
 
 
 
-    print("Number of samples: {0}, offset: {1}".format( len(list_dir), offset))
+    print("Number of samples: {0}".format( len(list_dir)))
     if extension is None:
         file_list = [path + f for f in list_dir if isfile(join(path, f))]
     else:
