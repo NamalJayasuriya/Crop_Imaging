@@ -45,24 +45,29 @@ from src.utils.realsense_helper import get_profiles
 
 
 
-CLIPPING_DISTANCE = 1.1
-FPS = 6 #record from device
+CLIPPING_DISTANCE = 3
+FPS = 15 #record from device
 RES_X =  1280 #record from device
 REX_Y = 720 #record from device
-BAG_FILE_NAME_READ = '../../data/bag_files/R6_G4_l_16_300_D415_441PM.bag' #R6_G4_l_16_300_D415_441PM  D415_single_plant2
-DIRECTORY_OUT_DEFAULT = '../../data/image_files/t' #'../dataset/R2_G4R_7_9/'
+BAG_FILE_NAME_READ = '../../data/bag_files/R6_G4_L_21_9.bag' #R6_G4_l_16_300_D415_441PM  D415_single_plant2
 SAVE_IMGS_ON_PLAYBACK = False # only for  playback rosbag
-RECORDING = False
+RECORDING = False # should be False for realtime recording
+THERMAL = False
+if not THERMAL and SAVE_IMGS_ON_PLAYBACK:
+    RECORDING = True
+if SAVE_IMGS_ON_PLAYBACK:
+    DIRECTORY_OUT_DEFAULT =  '../../data/bag_files/R6_G4_L_21_9'
+else:
+    DIRECTORY_OUT_DEFAULT = '../../data/image_files/t'
 DECIMATION = True
 FILTERING = True
-OFFSET = 1 # Offset foe saving images
+OFFSET = 2 # Offset foe saving images
 
 try:
     # Python 2 compatible
     input = raw_input
 except NameError:
     pass
-
 
 class Preset(IntEnum):
     Custom = 0
@@ -109,7 +114,7 @@ if __name__ == "__main__":
         description=
         "Realsense Recorder. Please select one of the optional arguments")
     parser.add_argument("--output_folder",
-                        default=DIRECTORY_OUT_DEFAULT, #ToDo: namal changed directory: realsense -> test
+                        default=DIRECTORY_OUT_DEFAULT,
                         help="set output folder")
     parser.add_argument("--record_rosbag",
                         action='store_true',
@@ -129,12 +134,14 @@ if __name__ == "__main__":
     path_output = args.output_folder
     path_depth = join(args.output_folder, "depth")
     path_color = join(args.output_folder, "color")
-    path_thermal = join(args.output_folder, "thermal")
+    if THERMAL:
+        path_thermal = join(args.output_folder, "thermal")
     if args.record_imgs or SAVE_IMGS_ON_PLAYBACK:
         make_clean_folder(path_output)
         make_clean_folder(path_depth)
         make_clean_folder(path_color)
-        make_clean_folder(path_thermal)
+        if THERMAL:
+            make_clean_folder(path_thermal)
 
     path_bag = join(args.output_folder, 'realsense.bag')
     if args.record_rosbag:
@@ -142,9 +149,9 @@ if __name__ == "__main__":
             user_input = input("%s exists. Overwrite? (y/n) : " % path_bag)
             if user_input.lower() == 'n':
                 exit()
-
-    # Initialize leption thermal camera by Namal
-    thermal_cam = Lepton()
+    if THERMAL:
+        # Initialize leption thermal camera by Namal
+        thermal_cam = Lepton()
 
     # Create a pipeline
     pipeline = rs.pipeline()
@@ -216,7 +223,8 @@ if __name__ == "__main__":
         while True:
             # Get frameset of color and depth
             frames = pipeline.wait_for_frames()
-            thermal_img = thermal_cam.grab().astype(np.float32)
+            if THERMAL:
+                thermal_img = thermal_cam.grab().astype(np.float32)
 
             #Decimation Added  by Namal
             if DECIMATION:
@@ -255,12 +263,13 @@ if __name__ == "__main__":
             #added by Namal
             depth_filtered = np.where((depth_image > clipping_distance) | (depth_image <= 0.3), 0, depth_image)
 
-            #thermal resize by namal
-            #thermal_img = cv2.resize(thermal_img, (1280, 720))
-            thermal_img2 = 255 * (thermal_img - thermal_img.min()) / (thermal_img.max() - thermal_img.min())
-            thermal_img2 = cv2.resize(thermal_img2, (1280, 720))
+            if THERMAL:
+                #thermal resize by namal
+                #thermal_img = cv2.resize(thermal_img, (1280, 720))
+                thermal_img2 = 255 * (thermal_img - thermal_img.min()) / (thermal_img.max() - thermal_img.min())
+                thermal_img2 = cv2.resize(thermal_img2, (1280, 720))
             if (args.record_imgs or SAVE_IMGS_ON_PLAYBACK) and RECORDING:
-                if frame_count == 0:
+                if fc2 == 0:
                     save_intrinsic_as_json(
                         join(args.output_folder, "camera_intrinsic.json"),
                         color_frame)
@@ -269,56 +278,63 @@ if __name__ == "__main__":
                             (path_depth, fc2), depth_image)
                     cv2.imwrite("%s/%06d.jpg" % \
                             (path_color, fc2), cv2.cvtColor(color_image, cv2.COLOR_RGB2BGR))
-
-                    cv2.imwrite("%s/%06d.png" % \
-                                (path_thermal, fc2), thermal_img2)
-                    cv2.imwrite("%s/%06d_.png" % \
-                                (path_thermal, fc2), thermal_img)
+                    if THERMAL:
+                        cv2.imwrite("%s/%06d.png" % \
+                                    (path_thermal, fc2), thermal_img2)
+                        cv2.imwrite("%s/%06d_.png" % \
+                                    (path_thermal, fc2), thermal_img)
                     print("Saved color + depth + thermal images %06d" % fc2)
                     fc2 += 1
                 frame_count += 1
 
             # Render images
             depth_colormap = cv2.applyColorMap(cv2.convertScaleAbs(depth_image, alpha=0.09), cv2.COLORMAP_JET)
-            thermal_colormap = cv2.applyColorMap(thermal_img2.astype(np.uint8), cv2.COLORMAP_INFERNO)
-            #thermal_colormap = cv2.applyColorMap(cv2.convertScaleAbs(thermal_img, alpha=0.09), cv2.COLORMAP_INFERNO)
-            images = np.hstack((color_image, depth_colormap, thermal_colormap)) #ToDo: change bg_removed-> color_image
-            win_name ='Recorder Realsense'
-            cv2.namedWindow(win_name, cv2.WINDOW_FULLSCREEN)
-            # Move it to (X,Y)
-            cv2.moveWindow(win_name, -400, 0)
-
-            # Resize the Window
-            images = cv2.resize(images, (1800, 380))
-
-            # Show the Image in the Window
-            cv2.imshow(win_name, images)
-
-            #time.sleep(1)
-            key = cv2.waitKey(1)
-
-            # if 'esc' button pressed, escape loop and exit program
-            if key == 27:
-                cv2.destroyAllWindows()
-                thermal_cam.close()
-                break
-            elif key == ord('p'):
-                RECORDING = False
-            elif key == ord('s'):
-                file = str(input("Enter A Directory Name: "))
-                #DIRECTORY_OUT_DEFAULT = '../dataset/'+file
-                path_output = '../../data/image_fies/'+file
-                path_depth = join(path_output, "depth")
-                path_color = join(path_output, "color")
-                path_thermal = join(path_output, "thermal")
-                make_clean_folder(path_output)
-                make_clean_folder(path_depth)
-                make_clean_folder(path_color)
-                make_clean_folder(path_thermal)
-                frame_count = 0
-                fc2 =0
-                RECORDING = True
+            if THERMAL:
+                thermal_colormap = cv2.applyColorMap(thermal_img2.astype(np.uint8), cv2.COLORMAP_INFERNO)
+                #thermal_colormap = cv2.applyColorMap(cv2.convertScaleAbs(thermal_img, alpha=
+            if THERMAL:
+                images = np.hstack((color_image, depth_colormap, thermal_colormap)) #ToDo: change bg_removed->
             else:
-                continue
+                images = np.hstack((color_image, depth_colormap))
+
+            if not SAVE_IMGS_ON_PLAYBACK:
+                win_name ='Recorder Realsense'
+                cv2.namedWindow(win_name, cv2.WINDOW_FULLSCREEN)
+                # Move it to (X,Y)
+                cv2.moveWindow(win_name, -400, 0)
+
+                # Resize the Window
+                images = cv2.resize(images, (1800, 380))
+
+                # Show the Image in the Window
+                cv2.imshow(win_name, images)
+
+                #time.sleep(1)
+                key = cv2.waitKey(1)
+
+                # if 'esc' button pressed, escape loop and exit program
+                if key == 27:
+                    cv2.destroyAllWindows()
+                    thermal_cam.close()
+                    break
+                elif key == ord('p'):
+                    RECORDING = False
+                elif key == ord('s'):
+                    file = str(input("Enter A Directory Name: "))
+                    #DIRECTORY_OUT_DEFAULT = '../dataset/'+file
+                    path_output = '../../data/image_fies/'+file
+                    path_depth = join(path_output, "depth")
+                    path_color = join(path_output, "color")
+                    make_clean_folder(path_output)
+                    make_clean_folder(path_depth)
+                    make_clean_folder(path_color)
+                    if THERMAL:
+                        path_thermal = join(path_output, "thermal")
+                        make_clean_folder(path_thermal)
+                    frame_count = 0
+                    fc2 =0
+                    RECORDING = True
+                else:
+                    continue
     finally:
         pipeline.stop()
