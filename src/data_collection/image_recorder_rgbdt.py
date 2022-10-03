@@ -47,18 +47,19 @@ from src.utils.realsense_helper import get_profiles
 
 CLIPPING_DISTANCE = 3
 FPS = 15 #record from device
-RES_X =  1280 #record from device
-REX_Y = 720 #record from device
-BAG_FILE_NAME_READ = '../../data/bag_files/R6_G4_L_21_9.bag' #R6_G4_l_16_300_D415_441PM  D415_single_plant2
+RES_X = 640 #1280 #record from device
+REX_Y = 360 #720 #record from device
+BAG_FILE_NAME_READ = '../../data/bag_files/R6_G3_L_21_9_BP.bag' #R6_G4_l_16_300_D415_441PM  D415_single_plant2
 SAVE_IMGS_ON_PLAYBACK = False # only for  playback rosbag
 RECORDING = False # should be False for realtime recording
 THERMAL = False
 if not THERMAL and SAVE_IMGS_ON_PLAYBACK:
     RECORDING = True
 if SAVE_IMGS_ON_PLAYBACK:
-    DIRECTORY_OUT_DEFAULT =  '../../data/bag_files/R6_G4_L_21_9'
+    DIRECTORY_OUT_DEFAULT =  BAG_FILE_NAME_READ[:-4]
 else:
     DIRECTORY_OUT_DEFAULT = '../../data/image_files/t'
+PATH_OUTPUT = '../../data/image_files/t' # set by program while running
 DECIMATION = True
 FILTERING = True
 OFFSET = 2 # Offset foe saving images
@@ -271,7 +272,7 @@ if __name__ == "__main__":
             if (args.record_imgs or SAVE_IMGS_ON_PLAYBACK) and RECORDING:
                 if fc2 == 0:
                     save_intrinsic_as_json(
-                        join(args.output_folder, "camera_intrinsic.json"),
+                        join(PATH_OUTPUT, "camera_intrinsic.json"),
                         color_frame)
                 if frame_count%OFFSET == 0:
                     cv2.imwrite("%s/%06d.png" % \
@@ -322,14 +323,14 @@ if __name__ == "__main__":
                 elif key == ord('s'):
                     file = str(input("Enter A Directory Name: "))
                     #DIRECTORY_OUT_DEFAULT = '../dataset/'+file
-                    path_output = '../../data/image_fies/'+file
-                    path_depth = join(path_output, "depth")
-                    path_color = join(path_output, "color")
-                    make_clean_folder(path_output)
-                    make_clean_folder(path_depth)
+                    PATH_OUTPUT = '../../data/image_files/'+file
+                    path_depth = join(PATH_OUTPUT, "depth")
+                    path_color = join(PATH_OUTPUT, "color")
+                    make_clean_folder(PATH_OUTPUT)
                     make_clean_folder(path_color)
+                    make_clean_folder(path_depth)
                     if THERMAL:
-                        path_thermal = join(path_output, "thermal")
+                        path_thermal = join(PATH_OUTPUT, "thermal")
                         make_clean_folder(path_thermal)
                     frame_count = 0
                     fc2 =0

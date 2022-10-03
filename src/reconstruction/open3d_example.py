@@ -37,6 +37,7 @@ from warnings import warn
 import json
 import open3d as o3d
 import copy
+import cv2 as cv
 
 if (sys.version_info > (3, 0)):
     pyver = 3
@@ -221,8 +222,22 @@ def add_if_exists(path_dataset, folder_names):
 
 
 def read_rgbd_image(color_file, depth_file, convert_rgb_to_intensity, config):
+
     color = o3d.io.read_image(color_file)
     depth = o3d.io.read_image(depth_file)
+
+    # color = cv.cvtColor(cv.imread(color_file), cv.COLOR_BGR2RGB)
+    # depth = cv.cvtColor(cv.imread(depth_file), cv.COLOR_BGR2RGB)
+    #ToDo: set the resolutiuon here : Reconstruction did not work with this image class
+    # color = cv.resize(color, (int(config["res_x"]), int(config["res_y"])))
+    # depth = cv.resize(depth, (int(config["res_x"]), int(config["res_y"])))
+    # #ToDo : Rotate image: Reconstruction did not work with this image class
+    # if config["rotate"]=='true':
+    #     color = cv.rotate(color, cv.ROTATE_90_COUNTERCLOCKWISE)
+    #     depth = cv.rotate(depth, cv.ROTATE_90_COUNTERCLOCKWISE)
+    # color = o3d.geometry.Image(color)
+    # depth = o3d.geometry.Image(depth)
+
     rgbd_image = o3d.geometry.RGBDImage.create_from_color_and_depth(
         color,
         depth,
@@ -231,6 +246,13 @@ def read_rgbd_image(color_file, depth_file, convert_rgb_to_intensity, config):
         convert_rgb_to_intensity=convert_rgb_to_intensity)
     return rgbd_image
 
+    # ToDo: Try tensor version for resize
+    # color = o3d.t.io.read_image(color_file) # ToDo resolve problem
+    # depth = o3d.t.io.read_image(depth_file)
+    # color = color.pyrdown()
+    # depth = color.pyrdown()
+    # rgbd_image = o3d.t.geometry.RGBDImage(color, depth, aligned=True)
+    # return rgbd_image.to_legacy()
 
 def get_rgbd_folders(path_dataset):
     path_color = add_if_exists(path_dataset, ["image/", "rgb/", "color/"])
