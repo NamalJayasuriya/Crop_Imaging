@@ -47,23 +47,22 @@ from src.utils.realsense_helper import get_profiles
 
 CLIPPING_DISTANCE = 3
 FPS = 15 #record from device
-RES_X = 640 #1280 #record from device
-REX_Y = 360 #720 #record from device
-BAG_FILE_NAME_READ = '../../data/bag_files/R6_G3_L_21_9_BP.bag' #R6_G4_l_16_300_D415_441PM  D415_single_plant2
-SAVE_IMGS_ON_PLAYBACK = False # only for  playback rosbag
+RES_X = 1280 #1280 #record from device
+REX_Y = 720 #720 #record from device
+BAG_FILE_NAME_READ = '../../data/bag_files/R6_G4_L_21_9.bag' #R6_G4_l_16_300_D415_441PM  D415_single_plant2
+SAVE_IMGS_ON_PLAYBACK = True # only for  playback rosbag
 RECORDING = False # should be False for realtime recording
 THERMAL = False
 if not THERMAL and SAVE_IMGS_ON_PLAYBACK:
     RECORDING = True
+DECIMATION = 4 # 0,2,4,6
+FILTERING = True
+OFFSET = 1 # Offset foe saving images
 if SAVE_IMGS_ON_PLAYBACK:
-    DIRECTORY_OUT_DEFAULT =  BAG_FILE_NAME_READ[:-4]
+    DIRECTORY_OUT_DEFAULT =  BAG_FILE_NAME_READ[:-4]+'_D_AV'+str(DECIMATION)
 else:
     DIRECTORY_OUT_DEFAULT = '../../data/image_files/t'
-PATH_OUTPUT = '../../data/image_files/t' # set by program while running
-DECIMATION = True
-FILTERING = True
-OFFSET = 2 # Offset foe saving images
-
+PATH_OUTPUT = DIRECTORY_OUT_DEFAULT # set by program while running
 try:
     # Python 2 compatible
     input = raw_input
@@ -194,8 +193,9 @@ if __name__ == "__main__":
     # Depth filtering:added by Namal
     depth_to_disparity = rs.disparity_transform(True)
     disparity_to_depth = rs.disparity_transform(False)
-    decimation = rs.decimation_filter()
-    decimation.set_option(rs.option.filter_magnitude, 2)
+    if DECIMATION:
+        decimation = rs.decimation_filter()
+        decimation.set_option(rs.option.filter_magnitude, DECIMATION)
     spatial = rs.spatial_filter()
     temporal = rs.temporal_filter()
     hole_filling = rs.hole_filling_filter()
@@ -235,8 +235,8 @@ if __name__ == "__main__":
             aligned_frames = align.process(frames)
 
             # Get aligned frames
-            aligned_depth_frame = aligned_frames.get_depth_frame()
-            color_frame = aligned_frames.get_color_frame()
+            aligned_depth_frame = aligned_frames.get_depth_frame().as_video_frame()
+            color_frame = aligned_frames.get_color_frame().as_video_frame()
 
             # Added by Namal
             if FILTERING:
@@ -273,7 +273,7 @@ if __name__ == "__main__":
                 if fc2 == 0:
                     save_intrinsic_as_json(
                         join(PATH_OUTPUT, "camera_intrinsic.json"),
-                        color_frame)
+                        aligned_depth_frame)
                 if frame_count%OFFSET == 0:
                     cv2.imwrite("%s/%06d.png" % \
                             (path_depth, fc2), depth_image)
