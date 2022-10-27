@@ -35,9 +35,19 @@ config2.enable_device(dev2)
 profile1 = pipe1.start(config1)
 profile2 = pipe2.start(config2)
 
-sensor1  =  profile1.get_device().first_depth_sensor()
-sensor1.set_option(rs.option.inter_cam_sync_mode, 0)
-sensor2  =  profile2.get_device().first_depth_sensor()
-sensor2.set_option(rs.option.inter_cam_sync_mode, 0)
+sensors   =  [profile1.get_device().first_depth_sensor(), profile2.get_device().first_depth_sensor()]
+# sensor1.set_option(rs.option.inter_cam_sync_mode, 0)
+# sensor2  =  profile2.get_device().first_depth_sensor()
+# sensor2.set_option(rs.option.inter_cam_sync_mode, 0)
 
-time.sleep(5)
+for sensor in sensors:
+    sensor.set_option(rs.option.inter_cam_sync_mode, 0)
+    sensor.set_option(rs.option.visual_preset, 1) # 1: default
+
+    # Set Controls : Added by NAmal
+    sensor.set_option(rs.option.enable_auto_exposure, 1)
+    sensor.set_option(rs.option.depth_units, 0.001)
+    sensor.set_option(rs.option.emitter_enabled, 1)
+    sensor.set_option(rs.option.laser_power, 300)
+
+time.sleep(30)
